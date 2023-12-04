@@ -1,24 +1,40 @@
 const std = @import("std");
+const ascii = std.ascii;
+const debug = std.debug;
 
-pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+fn findCoordinate(line: []u8) !u32 {
+    var v: [2]u8 = undefined;
+    v[0] = for (line) |c| {
+        if (ascii.isDigit(c)) {
+            break c;
+        }
+    } else unreachable;
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
-
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
-
-    try bw.flush(); // don't forget to flush!
+    var i: usize = line.len - 1;
+    v[1] = while (i >= 0) : (i -= 1) {
+        if (ascii.isDigit(line[i])) {
+            break line[i];
+        }
+    };
+    return std.fmt.parseInt(u32, &v, 10);
 }
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+pub fn main() !void {
+    const stdout = std.io.getStdOut().writer();
+    const file = try std.fs.cwd().openFile("input.txt", .{});
+    defer file.close();
+
+    var buf_reader = std.io.bufferedReader(file.reader());
+    var in_stream = buf_reader.reader();
+
+    var buf: [1024]u8 = undefined;
+    var total: u32 = 0;
+    while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
+        if (findCoordinate(line)) |coordinate| {
+            total += coordinate;
+        } else |err| {
+            try stdout.print("{}\n", .{err});
+        }
+    }
+    try stdout.print("{d}\n", .{total});
 }
