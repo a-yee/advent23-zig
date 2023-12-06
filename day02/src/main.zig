@@ -99,14 +99,21 @@ pub fn main() !void {
 
     var buf: [1024]u8 = undefined;
     var total: u32 = 0;
-    const rgb: [3]u32 = .{ 12, 13, 14 };
+
+    // part of day02A solution
+    // const rgb: [3]u32 = .{ 12, 13, 14 };
 
     while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
         const game: Game = try parseLine(line) orelse return;
-        //std.debug.print("Game Id: {d}, red: {d}, green: {d}, blue: {d}\n", .{ game.id, game.red, game.green, game.blue });
-        if (game.red <= rgb[0] and game.green <= rgb[1] and game.blue <= rgb[2]) {
-            total += game.id;
-        }
+
+        // Solution day02A - sum the games which support rgb
+        ////std.debug.print("Game Id: {d}, red: {d}, green: {d}, blue: {d}\n", .{ game.id, game.red, game.green, game.blue });
+        //if (game.red <= rgb[0] and game.green <= rgb[1] and game.blue <= rgb[2]) {
+        //    total += game.id;
+        //}
+
+        // day02B solution, sum the product of the local max number of cubes per color
+        total += game.red * game.green * game.blue;
     }
 
     try stdout.print("Total: {d}\n", .{total});
