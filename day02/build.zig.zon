@@ -38,6 +38,10 @@
         //    // computed. This field and `url` are mutually exclusive.
         //    .path = "foo",
         //},
+        .regex = .{
+            .url = "https://github.com/tiehuis/zig-regex/archive/f200f0f6ede57838015acf02230a5e9bd37930d8.tar.gz",
+            .hash = "1220b35bfeefc65ba6b6030918b7e3e3c6b037c8fa0f54faf19b384df0d57a0f475a",
+        },
     },
 
     // Specifies the set of files and directories that are included in this package.
