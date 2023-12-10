@@ -1,7 +1,7 @@
 const std = @import("std");
 
 fn isSymbol(c: u8) bool {
-    if (c != '.' and (c < '0' or c > '9')) {
+    if (c != '.' and c != '\n' and (c < '0' or c > '9')) {
         return true;
     }
     return false;
@@ -37,8 +37,8 @@ fn hasAdjacentSymbol(window: [3][]u8, startIdx: usize, idx: usize) bool {
         }
     }
 
-    // check above and below number
-    for (0..(idx - startIdx)) |i| {
+    // check above and below number and right side diagonals
+    for (0..(idx - startIdx + 1)) |i| {
         if (isSymbol(top[startIdx + i])) {
             return true;
         }
@@ -47,23 +47,14 @@ fn hasAdjacentSymbol(window: [3][]u8, startIdx: usize, idx: usize) bool {
         }
     }
 
-    // check diagnonals on right side
-    if (isSymbol(top[idx])) {
-        return true;
-    }
-    if (isSymbol(bottom[idx])) {
-        return true;
-    }
     return false;
 }
 
 fn partNrSearch(window: [3][]u8) !u64 {
-    const stdout = std.io.getStdOut().writer();
     var partsFound: u64 = 0;
 
     const activeRow = window[1];
 
-    try stdout.print("active row: {s}\n", .{activeRow[0..140]});
     var nrFound = false;
     var start: usize = undefined;
     row: for (activeRow, 0..) |c, i| {
@@ -77,7 +68,6 @@ fn partNrSearch(window: [3][]u8) !u64 {
             '.' => empty: {
                 if (nrFound) {
                     if (hasAdjacentSymbol(window, start, i)) {
-                        try stdout.print("found: {s}\n", .{activeRow[start..i]});
                         partsFound += try std.fmt.parseInt(u64, activeRow[start..i], 10);
                     }
                 }
@@ -86,7 +76,6 @@ fn partNrSearch(window: [3][]u8) !u64 {
             '\n' => {
                 if (nrFound) {
                     if (hasAdjacentSymbol(window, start, i)) {
-                        try stdout.print("found: {s}\n", .{activeRow[start..i]});
                         partsFound += try std.fmt.parseInt(u64, activeRow[start..i], 10);
                     }
                 }
@@ -94,14 +83,12 @@ fn partNrSearch(window: [3][]u8) !u64 {
             },
             else => part: {
                 if (nrFound) {
-                    try stdout.print("found: {s}\n", .{activeRow[start..i]});
                     partsFound += try std.fmt.parseInt(u64, activeRow[start..i], 10);
                 }
                 break :part false;
             },
         };
     }
-    try stdout.print("line total: {d}\n", .{partsFound});
     return partsFound;
 }
 
@@ -128,7 +115,6 @@ pub fn main() !void {
     (line_nr += 1) {
         _ = line;
         if (line_nr > 0) {
-            //try stdout.print("Line {d}: Active Buf: {d} Process line {d}:\n", .{ line_nr, active, (active + 2) % 3 });
             total += try partNrSearch([3][]u8{
                 &buf[(active + 1) % 3],
                 &buf[(active + 2) % 3],
